@@ -32,6 +32,12 @@ typedef struct RangeSlice {
     Row right;
 } RangeSlice;
 
+RangeSlice range_slices[] = {
+    {{1000,10}, {1000,50}},
+    {{2000,10}, {2000,50}},
+    {{3000,10}, {3000,50}},
+};
+
 /**
  * @brief Function used to generate large seeds for performance testing.
  * 
@@ -219,12 +225,28 @@ int scan_process(const Row* rows, int nrows, uint8_t(*handle)(Row))
     }
 
     int accepted_cnt = 0;
-    
-    // binary search right most position for $range_left
 
-    // binary search left most position for $range_right
+    int n_slices = sizeof(range_slices)/sizeof(RangeSlice);
+    for (int i = 0; i< n_slices; i++)
+    {
+        RangeSlice slice = range_slices[i];
+        Row range_left = slice.left;
+        Row range_right = slice.right;
+        // --right most-->|left_index  right_index|<--left most---
+        int right_idx = search_left_most_rowidx(rows, nrows, 0, nrows-1, range_right);
+        int left_idx = search_right_most_rowidx(rows, nrows, 0, nrows-1, range_left);
+        right_idx = right_idx < 0 ? 0 : right_idx;
+        left_idx = left_idx < 0 ? 0 : left_idx;
 
-    
+        for (int j = left_idx; j < right_idx; j++)
+        {
+            if (handle && handle(rows[i]))
+            {
+                accepted_cnt++;
+            }
+        }
+    }
+
     clock_t after = clock();
 
     printf("---- Cost: %ldus(%.2fms) to select %d rows- ----\n", 
@@ -284,14 +306,9 @@ int main(void)
         { 2000, 33 },
     };
 
-    Row range_left = {2000, 10};
-    Row range_right = {2000, 50};
-    printf("left bounder for (1000, 10) is %d\n", search_left_most_rowidx(rows, 6, 0, 5, range_left));
-    printf("right bounder for (1000, 10) is %d\n", search_left_most_rowidx(rows, 6, 0, 5, range_right));
-
     // Execute task1
-    task2(rows, N_ROWS);
-
+    // task2(rows, N_ROWS);
+    task2(rows, 6);
     // Destroy generated dataset.
     // free(rows);
 }
