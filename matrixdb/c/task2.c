@@ -266,13 +266,9 @@ int scan_process(const Row* rows, int nrows, uint8_t(*handle)(Row))
 uint8_t task2_handle(Row row)
 {
     // a in (1000, 2000, 3000) and b between 10 and 50
-    if ((row.a == 1000 || row.a == 2000 || row.a == 3000 ) && row.b >= 10 && row.b < 50)
-    {
-        printf("%d,%d\n", row.a, row.b);
-        return true;
-    }
-
-    return false;
+    
+    printf("%d,%d\n", row.a, row.b);
+    return true;
 }
 
 /**
@@ -307,8 +303,8 @@ int main(void)
     };
 
     // Execute task1
-    // task2(rows, N_ROWS);
-    task2(rows, 6);
+    task2(rows, sizeof(rows)/sizeof(Row));
+    // task2(rows, 6);
     // Destroy generated dataset.
     // free(rows);
 }

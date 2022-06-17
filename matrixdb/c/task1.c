@@ -37,14 +37,12 @@ Row* generate_seed(int nrows)
 {
     time_t seconds;
 
-    seconds = time(NULL);
-
     Row* rows = calloc(nrows, sizeof(Row));
 
     for (int i = 0; i < nrows; i++)
     {
-        rows[i].a = (seconds%N_ROWS)*(N_BASE_A+i);
-        rows[i].b = (seconds%N_ROWS)*(N_BASE_B+i);
+        rows[i].a = N_BASE_A*(i+1);
+        rows[i].b = N_BASE_B*(i+1);
     }
 
     return rows;
@@ -63,22 +61,48 @@ Row* generate_seed(int nrows)
  *               You can pass a NULL handle to reject all rows.
  * @return How many rows that accepted by the processor
  */
-int scan_process(Row* rows, int nrows, int accepted[], bool(*handle)(Row))
+int scan_process(const Row* rows, int nrows, bool(*handle)(Row))
 {
+    clock_t before = clock();
     if (!rows)
     {
-        return NULL;
+        return 0;
     }
+
+    int accepted_cnt = 0;
 
     for (int i = 0; i < nrows; i++)
     {
         if (handle && handle(rows[i]))
         {
-            accepted[];
+            accepted_cnt++;
         }
     }
 
-    return NULL;
+    clock_t after = clock();
+
+    printf("---- Cost: %ldus(%.2fms) to select %d rows- ----\n", 
+            after-before, ((float)after-(float)before)/1000.0F, accepted_cnt);
+
+    return accepted_cnt;
+}
+
+/**
+ * @brief Handle Row according to task1.
+ * 
+ * @param row immutable object for all row.
+ * @return 0 row is accepted
+ * @return 1 move to left
+ * @return 2 move to right
+ */
+bool task1_handle(Row row)
+{
+    // a in (1000, 2000, 3000) and b between 10 and 50
+    if ((row.a == 1000 || row.a == 2000 || row.a == 3000) && row.b >= 10 && row.b < 50)
+    {
+        printf("%d,%d\n", row.a, row.b);
+        return true;
+    }
 }
 
 /**
@@ -95,13 +119,15 @@ int scan_process(Row* rows, int nrows, int accepted[], bool(*handle)(Row))
  */
 void task1(const Row *rows, int nrows)
 {
-
+    scan_process(rows, nrows, task1_handle);
 }
 
 int main(void)
 {
     // Generate dataset to verify given solutions.
     Row* rows = generate_seed(N_ROWS);
+
+    task1(rows, N_ROWS);
 
     // Destroy generated dataset.
     free(rows);
