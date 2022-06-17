@@ -16,7 +16,7 @@
 #define N_BASE_A 1000
 #define N_BASE_B 10
 // Number of rows that generated for testing.
-#define N_ROWS 10
+#define N_ROWS 3276800
 
 /**
  * @brief 
@@ -81,8 +81,8 @@ int scan_process(const Row* rows, int nrows, bool(*handle)(Row))
 
     clock_t after = clock();
 
-    printf("---- Cost: %ldus(%.2fms) to select %d rows- ----\n", 
-            after-before, ((float)after-(float)before)/1000.0F, accepted_cnt);
+    printf("---- Cost: %ldus(%.2fms) Total(%d) Found(%d) ----\n", 
+            after-before, ((float)after-(float)before)/1000.0F, nrows , accepted_cnt);
 
     return accepted_cnt;
 }
