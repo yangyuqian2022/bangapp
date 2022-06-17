@@ -103,6 +103,8 @@ bool task1_handle(Row row)
         printf("%d,%d\n", row.a, row.b);
         return true;
     }
+
+    return false;
 }
 
 /**
