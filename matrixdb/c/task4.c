@@ -46,6 +46,16 @@ RangeSlice range_slices[] = {
     {{3000,10}, {3000,50}},
 };
 
+/**
+ * @brief MapEntry value_b with insertion point in the resultset.
+ * 
+ */
+typedef struct MapEntry {
+    Node* point; // Pointer to last insertion point with column b == $val_b
+} MapEntry;
+
+MapEntry* rmap = NULL;
+
 Node* ordered_rows = NULL;
 Node* ordered_rows_tail = NULL;
 int ordered_rows_count = 0;
@@ -329,6 +339,18 @@ void ordered_insert(Row row)
     node->value = row;
     node->next = NULL;
 
+    if (rmap[row.b].point)
+    {
+        // already know the insertion point,
+        // do the insertion and update the insertion point.
+        Node* ins_child = rmap[row.b].point->next;
+        // append incoming node to corresponding insertion point.
+        node->next = ins_child;
+        rmap[row.b].point->next = node;
+        // update the insertion point accordingly.
+        rmap[row.b].point = node;
+    }
+
     if (!ordered_rows)
     {
         ordered_rows = node;
@@ -356,6 +378,12 @@ void ordered_insert(Row row)
             cur->value = tmp;
         }
 
+        if(!(rmap+row.b))
+        {
+            // init the map entry if necessary.
+            rmap[row.b].point = node;
+        }
+        
         // printf("DEBUG: node(%d,%d) is inserted after node(%d,%d)\n", row.a,row.b, cur->value.a, cur->value.b);
     }
 }
@@ -399,10 +427,10 @@ void task3(const Row *rows, int nrows)
 
 int main(void)
 {
+    rmap = calloc(100, sizeof(MapEntry));
+
     // Generate dataset to verify given solutions.
     // Row* rows = generate_seed(N_ROWS);
-
-    
     Row rows[] = {
         { 1000, 31 },
         { 1000, 72 },

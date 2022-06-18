@@ -53,3 +53,4 @@ dkms.conf
 
 # Don't upload local files for security concerns
 localwork/
+task*
