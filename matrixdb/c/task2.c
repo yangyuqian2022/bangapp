@@ -16,7 +16,7 @@
 #define N_BASE_A 1000
 #define N_BASE_B 10
 // Number of rows that generated for testing.
-#define N_ROWS (0x04<<9)*1600
+#define N_ROWS 1000000
 
 /**
  * @brief 
@@ -84,18 +84,21 @@ Row* generate_seed(int nrows)
  */
 uint8_t compare(Row row1, Row row2)
 {
-    if (row1.a == row1.a && row1.b == row2.b)
+    if (row1.a == row2.a && row1.b == row2.b)
     {
+        // printf("DEBUG: (%d,%d)==(%d,%d)\n", row1.a, row1.b, row2.a, row2.b);
         return 0;
     }
 
     if ((row1.a > row2.a) || (row1.a >= row2.a && row1.b > row2.b))
     {
+        // printf("DEBUG: (%d,%d)>(%d,%d)\n", row1.a, row1.b, row2.a, row2.b);
         return 1;
     }
 
     if ((row1.a < row2.a) || (row1.a <= row2.a && row1.b < row2.b))
     {
+        // printf("DEBUG: (%d,%d)<(%d,%d)\n", row1.a, row1.b, row2.a, row2.b);
         return 2;
     }
 
@@ -113,6 +116,8 @@ int search_left_most_rowidx(const Row *rows, int nrows,
                         int low, int high, Row range_right)
 {
     int mid = low+(high-low)/2;
+
+    // printf("DEBUG: right_index(%d,%d) nrows(%d) low(%d) mid(%d) high(%d)\n", range_right.a, range_right.b, nrows, low, mid, high);
 
     // not found
     if (low == high && low == (nrows-1) && 
@@ -133,18 +138,6 @@ int search_left_most_rowidx(const Row *rows, int nrows,
         return nrows;
     }
     */
-
-    // < 1 means, first Row is >= range_right, nothing found
-    if (compare(rows[low], range_right) == 1)
-    {
-        return -1;
-    }
-
-    // == 0 means, first row == range_right, nothing found
-    if (compare(rows[low], range_right) == 0)
-    {
-        return -1;
-    }
 
     do
     {
@@ -186,6 +179,8 @@ int search_right_most_rowidx(const Row *rows, int nrows,
                         int low, int high, Row range_left)
 {
     int mid = low+(high-low)/2;
+
+    // printf("DEBUG: left_index nrows(%d) low(%d) mid(%d) high(%d)\n", nrows, low, mid, high);
 
     // not found
     if (low == high && low == (nrows-1) && compare(rows[high], range_left) != 0)
@@ -268,7 +263,7 @@ int scan_process(const Row* rows, int nrows, uint8_t(*handle)(Row))
                 range_left.a, range_left.b, left_idx, 
                 range_right.a, range_right.b, right_idx, finished_idx);*/
         
-        for (int j = left_idx; j < right_idx; j++)
+        for (int j = left_idx; j <= right_idx; j++)
         {
             
             if (handle && j > finished_idx && handle(rows[j]))
@@ -344,12 +339,12 @@ int main(void)
     task2(rows, N_ROWS);
 
     /*
-    Row range_left  = {3000,10};
+    Row range_left  = {1000,10};
     Row range_right = {3000,50};
 
     printf("(%d,%d)[%d]->(%d,%d)[%d]\n", 
-            range_left.a, range_left.b, search_right_most_rowidx(rows, 6, 0, 5, range_left),
-            range_right.a, range_right.b, search_left_most_rowidx(rows, 6, 0, 5, range_right));
+            range_left.a, range_left.b, search_right_most_rowidx(rows, N_ROWS, 0, N_ROWS-1, range_left),
+            range_right.a, range_right.b, search_left_most_rowidx(rows, N_ROWS, 0, N_ROWS-1, range_right));
     */
     // Destroy generated dataset.
     free(rows);
