@@ -399,9 +399,10 @@ void task3(const Row *rows, int nrows)
 int main(void)
 {
     // Generate dataset to verify given solutions.
-    // Row* rows = generate_seed(N_ROWS);
+    Row* rows = generate_seed(N_ROWS);
 
     
+    /*
     Row rows[] = {
         { 1000, 31 },
         { 1000, 72 },
@@ -410,9 +411,10 @@ int main(void)
         { 2000, 22 },
         { 2000, 33 },
     };
+    */
 
     // Execute task1
-    task3(rows, 6);
+    task3(rows, N_ROWS);
 
     /*
     Row range_left  = {2000,10};
@@ -423,6 +425,6 @@ int main(void)
             range_right.a, range_right.b, search_left_most_rowidx(rows, 6, 0, 5, range_right));
     */
     // Destroy generated dataset.
-    // free(rows);
+    free(rows);
 }
  
