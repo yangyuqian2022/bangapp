@@ -16,7 +16,7 @@
 #define N_BASE_A 1000
 #define N_BASE_B 10
 // Number of rows that generated for testing.
-#define N_ROWS 1000000
+#define N_ROWS 4000000
 
 /**
  * @brief 
@@ -32,11 +32,13 @@ typedef struct RangeSlice {
     Row right;
 } RangeSlice;
 
+
 RangeSlice range_slices[] = {
     {{1000,10}, {1000,50}},
     {{2000,10}, {2000,50}},
     {{3000,10}, {3000,50}},
 };
+
 
 /**
  * @brief Function used to generate large seeds for performance testing.
@@ -58,7 +60,7 @@ Row* generate_seed(int nrows)
     {
         rows[i].a = i*N_BASE_A;
         rows[i].b = i*N_BASE_B;
-        // printf("DEBUG: row = {%d,%d}\n", rows[i].a, rows[i].b);
+        //printf("DEBUG: row = {%d,%d}\n", rows[i].a, rows[i].b);
     }
 
     clock_t after = clock();
@@ -180,17 +182,19 @@ int search_right_most_rowidx(const Row *rows, int nrows,
 {
     int mid = low+(high-low)/2;
 
-    // printf("DEBUG: left_index nrows(%d) low(%d) mid(%d) high(%d)\n", nrows, low, mid, high);
+    // printf("DEBUG: left_index(%d,%d) nrows(%d) low(%d) mid(%d) high(%d)\n", range_left.a, range_left.b, nrows, low, mid, high);
 
     // not found
     if (low == high && low == (nrows-1) && compare(rows[high], range_left) != 0)
     {
-        return nrows;
+        // printf("DEBUG: left_index(%d,%d) not found nrows(%d) low(%d) mid(%d) high(%d)\n", range_left.a, range_left.b, nrows, low, mid, high);
+        return 0;
     }
 
     if (low > high)
     {
-        return mid;
+        // not found
+        return 0;
     }
 
     while(mid < high)
@@ -206,6 +210,8 @@ int search_right_most_rowidx(const Row *rows, int nrows,
         // mid > range_right
         if (compare(rows[mid], range_left) == 1)
         {
+            // printf("DEBUG: (%d,%d)>left_index(%d,%d) nrows(%d) low(%d) mid(%d) high(%d)\n", 
+            //    rows[mid].a, rows[mid].b, range_left.a, range_left.b, nrows, low, mid, high);
             return search_right_most_rowidx(rows, nrows, 
                 low, mid-1, range_left);
         }
@@ -213,6 +219,8 @@ int search_right_most_rowidx(const Row *rows, int nrows,
         // mid < range_right
         if (compare(rows[mid], range_left) == 2)
         {
+            // printf("DEBUG: (%d,%d)<left_index(%d,%d) nrows(%d) low(%d) mid(%d) high(%d)\n", 
+            //    rows[mid].a, rows[mid].b, range_left.a, range_left.b, nrows, low, mid, high);
             return search_right_most_rowidx(rows, nrows, 
                 mid+1, high, range_left);
         }
@@ -245,7 +253,7 @@ int scan_process(const Row* rows, int nrows, uint8_t(*handle)(Row))
     int accepted_cnt = 0;
 
     int n_slices = sizeof(range_slices)/sizeof(RangeSlice);
-    int finished_idx = 0;
+    int finished_idx = -1;
     for (int i = 0; i< n_slices; i++)
     {
         RangeSlice slice = range_slices[i];
@@ -256,22 +264,22 @@ int scan_process(const Row* rows, int nrows, uint8_t(*handle)(Row))
         int left_idx = search_right_most_rowidx(rows, nrows, 0, nrows-1, range_left);
         right_idx = right_idx < 0 ? 0 : right_idx;
         left_idx = left_idx < 0 ? 0 : left_idx;
-
-
         
-        /*printf("DEBUG: (%d,%d)[%d]->(%d,%d)[%d]  finished(%d)\n", 
+        /*
+        printf("DEBUG: (%d,%d)[%d]->(%d,%d)[%d]  finished(%d)\n", 
                 range_left.a, range_left.b, left_idx, 
-                range_right.a, range_right.b, right_idx, finished_idx);*/
-        
-        for (int j = left_idx; j <= right_idx; j++)
+                range_right.a, range_right.b, right_idx, finished_idx);
+        */
+       
+        for (int j = left_idx; j <= right_idx && j>=0 && j<nrows; j++)
         {
-            
             if (handle && j > finished_idx && handle(rows[j]))
             {
+                finished_idx = j;
                 accepted_cnt++;
             }
+            // printf("DEBUG: handled (%d,%d)[%d] finished_at(%d)\n", rows[j].a, rows[j].b, j, finished_idx);
         }
-        finished_idx = right_idx;
     }
 
     clock_t after = clock();
@@ -339,12 +347,12 @@ int main(void)
     task2(rows, N_ROWS);
 
     /*
-    Row range_left  = {1000,10};
-    Row range_right = {3000,50};
+    Row range_left  = {2000,10};
+    Row range_right = {2000,50};
 
     printf("(%d,%d)[%d]->(%d,%d)[%d]\n", 
-            range_left.a, range_left.b, search_right_most_rowidx(rows, N_ROWS, 0, N_ROWS-1, range_left),
-            range_right.a, range_right.b, search_left_most_rowidx(rows, N_ROWS, 0, N_ROWS-1, range_right));
+            range_left.a, range_left.b, search_right_most_rowidx(rows, 6, 0, 5, range_left),
+            range_right.a, range_right.b, search_left_most_rowidx(rows, 6, 0, 5, range_right));
     */
     // Destroy generated dataset.
     free(rows);

@@ -16,7 +16,7 @@
 #define N_BASE_A 1000
 #define N_BASE_B 10
 // Number of rows that generated for testing.
-#define N_ROWS 3276800
+#define N_ROWS 4000000
 
 /**
  * @brief 
