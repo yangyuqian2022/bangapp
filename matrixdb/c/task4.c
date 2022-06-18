@@ -41,9 +41,7 @@ typedef struct Node {
 } Node;
 
 RangeSlice range_slices[] = {
-    {{1000,10}, {1000,50}},
-    {{2000,10}, {2000,50}},
-    {{3000,10}, {3000,50}},
+    {{1000,10}, {99000,50}},
 };
 
 /**
@@ -399,7 +397,7 @@ void ordered_insert(Row row)
 uint8_t task4_handle(Row row)
 {
     // a in (1000, 2000, 3000) and b between 10 and 50
-    if ((row.a == 1000 || row.a == 2000 || row.a == 3000) && row.b >= 10 && row.b < 50)
+    if (row.a >= 1000 && row.a < 99000 && row.b >= 10 && row.b < 50)
     {
         ordered_insert(row);
         return true;
