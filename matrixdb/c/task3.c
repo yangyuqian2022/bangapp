@@ -242,8 +242,8 @@ int search_right_most_rowidx(const Row *rows, int nrows,
 
 void print_ordered_rows()
 {
-    printf("printing ordered rows (%d,%d)...\n", 
-                ordered_rows->value.a, ordered_rows->value.b);
+    // printf("DEBUG: printing ordered rows (%d,%d)...\n", 
+                // ordered_rows->value.a, ordered_rows->value.b);
     // Node* parent = NULL;
     Node* cur    = ordered_rows;
     while(cur)
